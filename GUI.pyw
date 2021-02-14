@@ -3,16 +3,17 @@ import PyPDF2 as pdf
 from tkinter.filedialog import asksaveasfilename
 from os import startfile
 import re
-# import traceback
+import traceback
 
 
 class Application(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, geometry, master=None):
         super().__init__(master)
         self.master = master
         self.master.title("PyPDF GUI")
         self.pack()
         self.create_widgets()
+        self.geometry = geometry
 
     def create_widgets(self):
         # self.grid_columnconfigure(5)
@@ -61,13 +62,18 @@ class Application(tk.Frame):
         self.go_button.grid(row=10,column=3)
 
         #Labels for grid spacing purposes
-        self.spacelabel1 = tk.Label(self, text="",width=25)
-        self.spacelabel1.grid(row=0,column=3)
-        self.spacelabel2 = tk.Label(self, text="")
-        self.spacelabel2.grid(row=2,column=3)
-        self.messagelabel = tk.Label(self, text="",fg="red")
-        self.messagelabel.grid(row=9,column=1,columnspan=4)
+        self.space_label1 = tk.Label(self, text="",width=25)
+        self.space_label1.grid(row=0,column=3)
+        self.space_label2 = tk.Label(self, text="")
+        self.space_label2.grid(row=2,column=3)
+        self.space_label3 = tk.Label(self, text="")
+        self.space_label3.grid(row=11,column=3)
+        self.message_label = tk.Label(self, text="",fg="red")
+        self.message_label.grid(row=9,column=1,columnspan=4)
 
+        #Help Button
+        self.help_button = tk.Button(self,text="Help",width=10,command=self.launch_help)
+        self.help_button.grid(row=12, column=3)
 
         #Calling method to disable based on default radiobutton chosen
         self.disable_entries(self.x.get())
@@ -89,7 +95,7 @@ class Application(tk.Frame):
 
     def on_radio_change(self):
         self.disable_entries(self.x.get())
-        self.messagelabel["text"] = ""
+        self.message_label["text"] = ""
 
     def disable_entries(self, option):
         if option == "combine":
@@ -111,7 +117,41 @@ class Application(tk.Frame):
         self.second_pdf_entry.delete(0,len(self.second_pdf_entry.get()))
         self.target_pdf_entry.delete(0,len(self.target_pdf_entry.get()))
         self.interval_entry.delete(0,len(self.interval_entry.get()))
-        self.messagelabel["text"] = ""
+        self.message_label["text"] = ""
+
+    def launch_help(self):
+        self.help_window = tk.Toplevel(self.master)
+        self.help_window.geometry(self.geometry)
+        self.help_window.title("PyPDF GUI Help")
+
+        self.combine_help_header = tk.Label(self.help_window, text="Combine PDFs", anchor="w", justify="left",font=('Verdana','9','bold', 'underline'))
+        self.combine_help_header.grid(row=1,column=1, sticky="NW")
+        self.split_help_header = tk.Label(self.help_window, text="Split PDFs", anchor="w", justify="left",font=('Verdana','9','bold', 'underline'))
+        self.split_help_header.grid(row=1,column=2, sticky="NW")
+        combine_help_string =  ("Entry Fields\n"
+                                "First PDF: double click the text box to search for the first file you wish to combine. \"Open\" the file and the path will populate the text box.\n\n"
+                                "Second PDF: same as First PDF, but this PDF will be appended to the end of the first PDF.\n\n"
+                                "New PDF: double click the text box to search for the file location you want to save the new PDF. Type a name to save the file as and click Save. This file cannot overwrite either file being combined.")
+        split_help_string =  ("Entry Fields:\n"
+                              "PDF: double click the text box to search for the file you wish to split. \"Open\" the file and the path will populate the text box.\n\n"
+                              "Split Interval: enter where you wish the PDF to be split at. There are 3 ways to split a document.\n"
+                              " - Enter a number to split the document at that page.\n"
+                              " - Enter multiple numbers separated by commas to split the document at each page listed.\n"
+                              " - Enter a number followed by an asterisk (*) to split the PDF at every nth page.\n"
+                              "If the interval doesn't follow one of the formats, it will not process.")
+        self.combine_help = tk.Label(self.help_window, text=combine_help_string, width=42, anchor="w", justify="left",wraplength=295)
+        self.combine_help.grid(row=2,column=1, sticky="NW")
+        self.split_help = tk.Label(self.help_window, text=split_help_string, width=42, anchor="w", justify="left",wraplength=295)
+        self.split_help.grid(row=2,column=2, sticky="NW")
+        
+        go_help_string = "Click Go to process the combination/split. If it is successful, all text fields will be cleared for the process. If it does not complete, a red message will appear above the Go button."
+        self.go_help = tk.Label(self.help_window, text=go_help_string, justify="center",wraplength="500")
+        self.go_help.grid(row=3,column=1,columnspan=2)
+
+        self.close_help = tk.Button(self.help_window,text="Close",width=10,command=self.help_window.destroy)
+        self.close_help.grid(row=4,column=1,columnspan=2)
+
+
 
     #PDF manipulation Methods
     def split_pdf_method(self):
@@ -197,13 +237,13 @@ class Application(tk.Frame):
             # (^\d+\*$)|((^(\d,)+\d$)|^\d+$)
 
         except IndexError as error:
-            self.messagelabel["text"] = "Cannot split at first page or Interval out of bounds"
+            self.message_label["text"] = "Cannot split at first page or Interval out of bounds"
             traceback.print_exc()
         except FileNotFoundError as error:
-            self.messagelabel["text"] = "File name(s) missing or incorrect"
+            self.message_label["text"] = "File name(s) missing or incorrect"
             traceback.print_exc()
         except IOError as error:
-            self.messagelabel["text"] = "Split Interval format not valid"
+            self.message_label["text"] = "Split Interval format not valid"
             traceback.print_exc()
     
 
@@ -220,10 +260,10 @@ class Application(tk.Frame):
             startfile(self.target_pdf_entry.get())
             self.clear_entry_fields()
         except FileNotFoundError as error:
-            self.messagelabel["text"] = "File name(s) missing or incorrect"
+            self.message_label["text"] = "File name(s) missing or incorrect"
             traceback.print_exc()
         except NameError as error:
-            self.messagelabel["text"] = "New file name must be different from files to be combined"
+            self.message_label["text"] = "New file name must be different from files to be combined"
             traceback.print_exc()
 
 
@@ -237,5 +277,5 @@ y_offset = int((screen_height-y)/2)
 geometry_string = str(x) + 'x' + str(y) + '+' + str(x_offset) + '+' + str(y_offset)
 root.geometry(geometry_string)
 root.resizable(0,0)
-app = Application(master=root)
+app = Application(geometry=geometry_string,master=root)
 app.mainloop()
