@@ -19,12 +19,14 @@ class Application(tk.Frame):
         # self.grid_columnconfigure(5)
         # self.grid_rowconfigure(12)
 
-        #Combine/Split Radio Buttons
+        #Combine/Split/Watermark Radio Buttons
         self.x = tk.StringVar(value="combine")
         self.combine = tk.Radiobutton(self, text="Combine", variable=self.x, value="combine", width =15, command=self.on_radio_change)
         self.split = tk.Radiobutton(self, text="Split", variable=self.x, value="split", width=15, command=self.on_radio_change)
+        self.watermark = tk.Radiobutton(self, text="Watermark", variable=self.x, value="watermark",width=15,command=self.on_radio_change)
         self.combine.grid(row=1,column=1)
-        self.split.grid(row=1,column=4)
+        self.split.grid(row=1,column=3)
+        self.watermark.grid(row=1,column=5)
 
         #Combine PDF Fields
         self.first_pdf = tk.Label(self, text="First PDF")
@@ -47,29 +49,49 @@ class Application(tk.Frame):
 
         #Split PDF Fields
         self.split_pdf = tk.Label(self, text="PDF")
-        self.split_pdf.grid(row=3,column=4,sticky="W")
+        self.split_pdf.grid(row=3,column=3,sticky="W")
         self.split_pdf_entry = tk.Entry(self)
-        self.split_pdf_entry.grid(row=4,column=4)
+        self.split_pdf_entry.grid(row=4,column=3)
         self.split_pdf_entry.bind("<Double-Button-1>", self.on_entry_click)
 
         self.interval = tk.Label(self, text="Split Interval")
-        self.interval.grid(row=5,column=4,sticky="W")
+        self.interval.grid(row=5,column=3,sticky="W")
         self.interval_entry = tk.Entry(self)
-        self.interval_entry.grid(row=6,column=4)
+        self.interval_entry.grid(row=6,column=3)
+
+        #Watermark PDF Fields
+        self.watermark_main_pdf = tk.Label(self, text="Main PDF")
+        self.watermark_main_pdf.grid(row=3,column=5,sticky="W")
+        self.watermark_main_pdf_entry = tk.Entry(self)
+        self.watermark_main_pdf_entry.grid(row=4,column=5)
+        self.watermark_main_pdf_entry.bind("<Double-Button-1>", self.on_entry_click)
+
+        self.watermark_pdf = tk.Label(self, text="Watermark PDF")
+        self.watermark_pdf.grid(row=5,column=5,sticky="W")
+        self.watermark_pdf_entry = tk.Entry(self)
+        self.watermark_pdf_entry.grid(row=6,column=5)
+        self.watermark_pdf_entry.bind("<Double-Button-1>", self.on_entry_click)
+
 
         #Go Button
         self.go_button = tk.Button(self,text="GO",width=15,command=self.go_button_press)
         self.go_button.grid(row=10,column=3)
 
         #Labels for grid spacing purposes
-        self.space_label1 = tk.Label(self, text="",width=25)
-        self.space_label1.grid(row=0,column=3)
+        #Label 1 adds space at the top above the radio buttons and decides the space between the 1st and 3rd columns
+        self.space_label1 = tk.Label(self, text="",width=15)
+        self.space_label1.grid(row=0,column=2)
+        #Label 2 separates the radio buttons and the top entry fields
         self.space_label2 = tk.Label(self, text="")
-        self.space_label2.grid(row=2,column=3)
-        self.space_label3 = tk.Label(self, text="")
-        self.space_label3.grid(row=11,column=3)
+        self.space_label2.grid(row=2,column=2)
+        #Label 3 separates the GO and Help Buttons
+        self.space_label3 = tk.Label(self, text="",width=15)
+        self.space_label3.grid(row=11,column=2)
+        #Label 4 separates the Split and Watermark columns
+        self.space_label4 = tk.Label(self, text="", width=15)
+        self.space_label4.grid(row=0,column=4)
         self.message_label = tk.Label(self, text="",fg="red")
-        self.message_label.grid(row=9,column=1,columnspan=4)
+        self.message_label.grid(row=9,column=2,columnspan=3)
 
         #Help Button
         self.help_button = tk.Button(self,text="Help",width=10,command=self.launch_help)
@@ -81,8 +103,10 @@ class Application(tk.Frame):
     def go_button_press(self):
         if self.x.get() == "combine":
             self.combine_pdf_method()
-        else:
+        elif self.x.get() == "split":
             self.split_pdf_method()
+        elif self.x.get() == "watermark":
+            self.watermark_pdf_method()
 
     #Method used to open Windows File Explorer when a user clicks in the entry fields
     def on_entry_click(self,event):
@@ -104,12 +128,24 @@ class Application(tk.Frame):
             self.first_pdf_entry["state"]="normal"
             self.second_pdf_entry["state"]="normal"
             self.target_pdf_entry["state"]="normal"
-        else:
+            self.watermark_main_pdf_entry["state"]="disabled"
+            self.watermark_pdf_entry["state"]="disabled"
+        elif option == "split":
             self.first_pdf_entry["state"]="disabled"
             self.second_pdf_entry["state"]="disabled"
             self.target_pdf_entry["state"]="disabled"
             self.split_pdf_entry["state"]="normal"
             self.interval_entry["state"]="normal"
+            self.watermark_main_pdf_entry["state"]="disabled"
+            self.watermark_pdf_entry["state"]="disabled"
+        elif option == "watermark":
+            self.first_pdf_entry["state"]="disabled"
+            self.second_pdf_entry["state"]="disabled"
+            self.target_pdf_entry["state"]="disabled"
+            self.split_pdf_entry["state"]="disabled"
+            self.interval_entry["state"]="disabled"
+            self.watermark_main_pdf_entry["state"]="normal"
+            self.watermark_pdf_entry["state"]="normal"
 
     def clear_entry_fields(self):
         self.split_pdf_entry.delete(0,len(self.split_pdf_entry.get()))
@@ -117,6 +153,8 @@ class Application(tk.Frame):
         self.second_pdf_entry.delete(0,len(self.second_pdf_entry.get()))
         self.target_pdf_entry.delete(0,len(self.target_pdf_entry.get()))
         self.interval_entry.delete(0,len(self.interval_entry.get()))
+        self.watermark_pdf_entry.delete(0,len(self.watermark_pdf_entry.get()))
+        self.watermark_main_pdf_entry.delete(0,len(self.watermark_main_pdf_entry.get()))
         self.message_label["text"] = ""
 
     def launch_help(self):
@@ -128,6 +166,8 @@ class Application(tk.Frame):
         self.combine_help_header.grid(row=1,column=1, sticky="NW")
         self.split_help_header = tk.Label(self.help_window, text="Split PDFs", anchor="w", justify="left",font=('Verdana','9','bold', 'underline'))
         self.split_help_header.grid(row=1,column=2, sticky="NW")
+        self.watermark_help_header = tk.Label(self.help_window, text="Watermark PDFs", anchor="w", just="left", font=('Verdana','9','bold', 'underline'))
+        self.watermark_help_header.grid(row=1,column=3, sticky="NW")
         combine_help_string =  ("Entry Fields\n"
                                 "First PDF: double click the text box to search for the first file you wish to combine. \"Open\" the file and the path will populate the text box.\n\n"
                                 "Second PDF: same as First PDF, but this PDF will be appended to the end of the first PDF.\n\n"
@@ -139,17 +179,23 @@ class Application(tk.Frame):
                               " - Enter multiple numbers separated by commas to split the document at each page listed.\n"
                               " - Enter a number followed by an asterisk (*) to split the PDF at every nth page.\n"
                               "If the interval doesn't follow one of the formats, it will not process.")
+        watermark_help_string = ("Entry Fields\n"
+                                "Main PDF: double click the text box to search for the file you wish to watermark.\n\n"
+                                "Watermark PDF: double click the text box to search for the watermark pdf file to merge with the main pdf.\n\n"
+                                "The Watermark PDF will be merged with the Main PDF. The watermark should be faded so it does not overtake the main file's content and when Go is pressed, a new pdf file is created with the same filename as the main pdf but with '_watermarked' appended to it.")
         self.combine_help = tk.Label(self.help_window, text=combine_help_string, width=42, anchor="w", justify="left",wraplength=295)
         self.combine_help.grid(row=2,column=1, sticky="NW")
         self.split_help = tk.Label(self.help_window, text=split_help_string, width=42, anchor="w", justify="left",wraplength=295)
         self.split_help.grid(row=2,column=2, sticky="NW")
+        self.watermark_help = tk.Label(self.help_window, text=watermark_help_string, width=42, anchor="w", justify="left",wraplength=295)
+        self.watermark_help.grid(row=2,column=3, sticky="NW")
         
-        go_help_string = "Click Go to process the combination/split. If it is successful, all text fields will be cleared for the process. If it does not complete, a red message will appear above the Go button."
+        go_help_string = "Click Go to process the combination/split/watermark. If it is successful, all text fields will be cleared for the process. If it does not complete, a red message will appear above the Go button."
         self.go_help = tk.Label(self.help_window, text=go_help_string, justify="center",wraplength="500")
-        self.go_help.grid(row=3,column=1,columnspan=2)
+        self.go_help.grid(row=3,column=1,columnspan=3)
 
         self.close_help = tk.Button(self.help_window,text="Close",width=10,command=self.help_window.destroy)
-        self.close_help.grid(row=4,column=1,columnspan=2)
+        self.close_help.grid(row=4,column=1,columnspan=3)
 
 
 
@@ -267,10 +313,38 @@ class Application(tk.Frame):
             traceback.print_exc()
 
 
+    def watermark_pdf_method(self):
+        filename = self.watermark_main_pdf_entry.get()
+        watermark = self.watermark_pdf_entry.get()
+        try:
+            if filename == "" or watermark == "":
+                raise FileNotFoundError
+            if filename == watermark:
+                raise NameError
+            filename_reader = pdf.PdfFileReader(open(filename, 'rb'))
+            watermark_reader = pdf.PdfFileReader(open(watermark, 'rb'))
+            output = pdf.PdfFileWriter()
+            for i in range(filename_reader.getNumPages()):
+                page = filename_reader.getPage(i)
+                page.mergePage(watermark_reader.getPage(0))
+                output.addPage(page)
+            output_name = filename[:-4] + "_watermarked.pdf"
+            with open(output_name, 'wb') as file:
+                output.write(file)
+            self.clear_entry_fields()
+        except FileNotFoundError as error:
+            self.message_label["text"] = "File name(s) missing or incorrect"
+            traceback.print_exc()
+        except NameError as error:
+            self.message_label["text"] = "Watermark file cannot be the same as the PDF to be watermarked"
+            traceback.print_exc()
+
+
+
 root = tk.Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-x = 600
+x = 900
 y = 300
 x_offset = int((screen_width-x)/2)
 y_offset = int((screen_height-y)/2)
