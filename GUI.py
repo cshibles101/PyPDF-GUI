@@ -204,7 +204,7 @@ class Application(tk.Frame):
         filename = self.split_pdf_entry.get()
         interval_value = self.interval_entry.get()
         try:
-            if re.search("(^\d+\*$)|((^(\d,)+\d$)|^\d+$)",interval_value) is None:
+            if re.search("(^\d+\*$)|((^(\d+,)+\d+$)|^\d+$)",interval_value) is None:
                 raise IOError
             else:
                 if ',' in interval_value: #splits at multiple specific page numbers
